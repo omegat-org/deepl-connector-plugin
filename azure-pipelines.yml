@@ -1,0 +1,42 @@
+trigger:
+- main
+
+pool:
+  vmImage:  'ubuntu-latest'
+
+jobs:
+- job: gradleCheck
+  displayName: Run check
+  steps:
+  - task: Gradle@2
+    inputs:
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      tasks: 'check'
+- job: release-n-publish
+  displayName: Upload Release Asset
+  steps:
+  - task: Gradle@2
+    displayName: check version
+    inputs:
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      tasks: 'printVersion'
+  - task: Gradle@2
+    displayName: build artifact
+    inputs:
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      tasks: 'build'
+## when library project to publish to OSSRH
+#  - task: Gradle@2
+#    displayName: Publish package to OSSRH
+#    inputs:
+#      javaHomeOption: 'JDKVersion'
+#      jdkVersionOption: '1.8'
+#      tasks: 'publishToSonatype'
+#    env:
+#      ORG_GRADLE_PROJECT_signingKey: $( secrets_GPG_SECRET_KEY )
+#      ORG_GRADLE_PROJECT_signingPassword: $( secrets_GPG_KEY_PASSPHARASE )
+#      SONATYPE_USER: $( secrets_SONATYPE_USER )
+#      SONATYPE_PASS: $( secrets_SONATYPE_PASS )

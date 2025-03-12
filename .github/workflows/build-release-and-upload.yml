@@ -1,0 +1,42 @@
+name: Upload Assets to OSSRH
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: Get the version
+      id: get_version
+      run: |
+        REV_COUNT=`git rev-list --count HEAD`
+        echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+    - uses: gradle/gradle-build-action@v3
+    - run: ./gradlew -PenvIsCi=true check
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release v${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+    - name: Publish package to OSSRH
+      run: ./gradlew publishToSonatype
+      env:
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SECRET_KEY }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSPHARASE }}
+        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+        SONATYPE_PASS: ${{ secrets.SONATYPE_PASS }}

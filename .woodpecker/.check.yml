@@ -1,0 +1,21 @@
+when:
+  - event: pull_request
+  - event: tag
+    ref: refs/tags/v*
+  - event: push
+    branch: [main, releases/*]
+
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      partial: false
+      depth: 1
+      lfs: false
+      tags: true
+
+steps:
+  build:
+    image: eclipse-temurin:17
+    commands:
+      - ./gradlew --no-daemon -PenvIsCi=true clean build
