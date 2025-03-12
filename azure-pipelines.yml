@@ -11,7 +11,7 @@ jobs:
   - task: Gradle@2
     inputs:
       javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.8'
+      jdkVersionOption: '1.17'
       tasks: 'check'
 - job: release-n-publish
   displayName: Upload Release Asset
@@ -20,7 +20,7 @@ jobs:
     displayName: check version
     inputs:
       javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.8'
+      jdkVersionOption: '1.17'
       tasks: 'printVersion'
   - task: Gradle@2
     displayName: build artifact
@@ -33,7 +33,7 @@ jobs:
 #    displayName: Publish package to OSSRH
 #    inputs:
 #      javaHomeOption: 'JDKVersion'
-#      jdkVersionOption: '1.8'
+#      jdkVersionOption: '1.17'
 #      tasks: 'publishToSonatype'
 #    env:
 #      ORG_GRADLE_PROJECT_signingKey: $( secrets_GPG_SECRET_KEY )

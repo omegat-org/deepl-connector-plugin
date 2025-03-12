@@ -1,8 +1,12 @@
 [versions]
-slf4j = { strictly = "[2.0.7, 2.1[", prefer = "2.0.7" }
+slf4j = "2.0.7"
 junit = "4.13.2"
 junit5 = "5.12.0"
 slf4j_format = "0.5.1"
+commons_io = "2.18.0"
+commons_text = "1.13.0"
+jackson = "2.16.1"
+wiremock = "3.12.1"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
@@ -10,9 +14,15 @@ slf4j-format-jdk14 ={group = "tokyo.northside", name = "slf4j-format-jdk14",  ve
 slf4j-simple = {group = "org.slf4j", name = "slf4j-simple",  version.ref = "slf4j"}
 junit4 = {group = "junit", name = "junit", version.ref = "junit"}
 junit-jupiter = {group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5"}
+commons-io = {group = "commons-io", name = "commons-io", version.ref = "commons_io"}
+commons-text = {group = "org.apache.commons", name = "commons-text", version.ref = "commons_text"}
+jackson-core = {group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson"}
+jackson-databind = {group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson"}
+wiremock = {group = "org.wiremock", name = "wiremock", version.ref = "wiremock"}
 
 [plugins]
 git-version = {id = "com.palantir.git-version", version = "3.1.0"}
 nexus-publish = {id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0"}
 spotbugs = {id = "com.github.spotbugs", version = "6.1.7"}
 spotless = {id = "com.diffplug.spotless", version = "7.0.2"}
+omegat = {id = "org.omegat.gradle", version = "2.0.0-rc2"}

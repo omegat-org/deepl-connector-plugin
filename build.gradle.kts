@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.git.version) apply false
     alias(libs.plugins.nexus.publish)
+    alias(libs.plugins.omegat)
 }
 
 val dotgit = project.file(".git")
@@ -38,6 +39,12 @@ tasks.wrapper {
     gradleVersion = "8.10"
 }
 
+omegat {
+    version("6.0.0")
+    pluginClass("org.omegat.connectors.machinetranslators.deepl.DeepLTranslate")
+    packIntoJarFileFilter = {it.exclude("META-INF/**/*", "module-info.class", "kotlin/**/*")}
+}
+
 repositories {
     mavenCentral()
 }
@@ -45,9 +52,21 @@ repositories {
 dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.slf4j.format.jdk14)
+    compileOnly(libs.commons.io)
+    compileOnly(libs.commons.text)
+
+    // JSON parser
+    compileOnly(libs.jackson.core)
+    compileOnly(libs.jackson.databind)
+
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.slf4j.simple)
+
+    testImplementation(libs.jackson.core)
+    testImplementation(libs.jackson.databind)
+    testImplementation(libs.wiremock)
 }
+
 
 java {
     toolchain {
@@ -63,7 +82,7 @@ tasks.named<Test>("test") {
 
 tasks.jar {
     manifest {
-        attributes("Automatic-Module-Name" to "tokyo.northside.example")
+        attributes("Automatic-Module-Name" to "org.omegat.machinetranslators.deepl")
     }
 }
 
@@ -71,12 +90,12 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            groupId = "tokyo.northside"
-            artifactId = "example"
+            groupId = "org.omegat"
+            artifactId = "omegat-deepl-connector"
             pom {
-                name.set("example")
-                description.set("Example Library")
-                url.set("https://codeberg.org/miurahr/example")
+                name.set("omegat-deepl-connector")
+                description.set("DeepL V1 connector plugin")
+                url.set("https://github.com/omegat-org/deepl-connector-plugin")
                 licenses {
                     license {
                         name.set("The GNU General Public License, Version 3")
@@ -84,17 +103,10 @@ publishing {
                         distribution.set("repo")
                     }
                 }
-                developers {
-                    developer {
-                        id.set("miurahr")
-                        name.set("Hiroshi Miura")
-                        email.set("miurahr@linux.com")
-                    }
-                }
                 scm {
-                    connection.set("scm:git:git://codeberg.org/miurahr/example.git")
-                    developerConnection.set("scm:git:git://codeberg.org/miurahr/example.git")
-                    url.set("https://codeberg.org/miurahr/example")
+                    connection.set("scm:git:git://github.com/omegat-org/deepl-connector-plugin.git")
+                    developerConnection.set("scm:git:git://github.com/omegat-org/deepl-connector-plugin.git")
+                    url.set("https://github.com/omegat-org/deepl-connector-plugin")
                 }
             }
         }
@@ -142,12 +154,6 @@ tasks.withType<Jar> {
 }
 
 spotless {
-    format("misc") {
-        target(listOf("*.gradle", ".gitignore"))
-        trimTrailingWhitespace()
-        indentWithSpaces()
-        endWithNewline()
-    }
     java {
         target(listOf("src/*/java/**/*.java"))
         palantirJavaFormat()
