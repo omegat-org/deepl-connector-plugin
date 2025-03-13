@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Window;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -67,6 +68,9 @@ public class DeepLTranslate extends BaseCachedTranslate {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
     private static final ILogger LOGGER = LoggerFactory.getLogger(DeepLTranslate.class, BUNDLE);
 
+    private static final String FILLER = "...";
+    private static final int FILLER_LEN = FILLER.length();
+
     private String temporaryKey = null;
 
     protected static final String DEEPL_V1_URL = "https://api.deepl.com/v1/translate";
@@ -81,8 +85,6 @@ public class DeepLTranslate extends BaseCachedTranslate {
     protected static final String DEEPL_PATH = "/v1/translate";
     protected final String deepLUrl;
 
-    private static final int MAX_TEXT_BYTES = 128 * 1024; // Max limit is 128KiB
-
     // See
     // https://support.deepl.com/hc/en-us/articles/4405712799250-Character-count-for-translation-within
     // -applications
@@ -92,12 +94,15 @@ public class DeepLTranslate extends BaseCachedTranslate {
     /**
      * Register plugins into OmegaT.
      */
+    @SuppressWarnings("unused")
     public static void loadPlugins() {
         Core.registerMachineTranslationClass(DeepLTranslate.class);
     }
 
+    @SuppressWarnings("unused")
     public static void unloadPlugins() {}
 
+    @SuppressWarnings("unused")
     public DeepLTranslate() {
         deepLUrl = DEEPL_V1_URL;
     }
@@ -131,8 +136,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
 
     @Override
     protected String translate(Language sLang, Language tLang, String text) throws MachineTranslateError {
-
-        Map<String, String> request = createRequest(sLang, tLang, text);
+        Map<String, String> request = createRequest(sLang, tLang, getTruncatedText(text));
         Map<String, String> headers = new TreeMap<>();
 
         String v;
@@ -252,5 +256,16 @@ public class DeepLTranslate extends BaseCachedTranslate {
         dialog.panel.temporaryCheckBox.setSelected(isCredentialStoredTemporarily(PROPERTY_API_KEY));
 
         dialog.show();
+    }
+
+    /**
+     * Get truncated text into maximum text length that MT engine API allowed.
+     *
+     * @param text
+     *            original source text.
+     * @return truncated text.
+     */
+    private String getTruncatedText(String text) {
+        return text.substring(0, getMaxTextLength() - FILLER_LEN) + FILLER;
     }
 }
