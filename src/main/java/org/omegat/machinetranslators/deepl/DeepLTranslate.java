@@ -32,7 +32,7 @@ package org.omegat.machinetranslators.deepl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Window;
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -44,7 +44,6 @@ import org.omegat.core.machinetranslators.MachineTranslateError;
 import org.omegat.gui.exttrans.MTConfigDialog;
 import org.omegat.util.HttpConnectionUtils;
 import org.omegat.util.Language;
-import org.omegat.util.Log;
 import tokyo.northside.logging.ILogger;
 import tokyo.northside.logging.LoggerFactory;
 
@@ -131,7 +130,35 @@ public class DeepLTranslate extends BaseCachedTranslate {
     }
 
     @Override
-    protected String translate(Language sLang, Language tLang, String text) throws Exception {
+    protected String translate(Language sLang, Language tLang, String text) throws MachineTranslateError {
+
+        Map<String, String> request = createRequest(sLang, tLang, text);
+        Map<String, String> headers = new TreeMap<>();
+
+        String v;
+        try {
+            v = HttpConnectionUtils.get(deepLUrl, request, headers, "UTF-8");
+        } catch (IOException e) {
+            LOGGER.atError().setCause(e).setMessage("Connection error").log();
+            return null;
+        }
+        String tr = getJsonResults(v);
+        if (tr == null) {
+            return null;
+        }
+        tr = BaseTranslate.unescapeHTML(tr);
+        return cleanSpacesAroundTags(tr, text);
+    }
+
+    // for test stub
+    protected ProjectProperties getProjectProperties() {
+        return Core.getProject().getProjectProperties();
+    }
+
+    /**
+     * Create request and return as json string.
+     */
+    protected Map<String, String> createRequest(Language sLang, Language tLang, String trText) throws MachineTranslateError {
         String apiKey = getCredential(PROPERTY_API_KEY);
         if (apiKey == null || apiKey.isEmpty()) {
             if (temporaryKey == null) {
@@ -145,7 +172,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
         // No check is done, but only "EN", "DE", "FR", "ES", "IT", "NL", "PL"
         // are supported right now.
 
-        params.put("text", text);
+        params.put("text", trText);
         params.put("source_lang", sLang.getLanguageCode().toUpperCase());
         params.put("target_lang", tLang.getLanguageCode().toUpperCase());
         params.put("tag_handling", "xml");
@@ -162,25 +189,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
         params.put("preserve_formatting", "1");
         params.put("auth_key", apiKey);
 
-        Map<String, String> headers = new TreeMap<>();
-
-        try {
-            String v = HttpConnectionUtils.get(deepLUrl, params, headers, "UTF-8");
-            String tr = getJsonResults(v);
-            if (tr == null) {
-                return null;
-            }
-            tr = BaseTranslate.unescapeHTML(tr);
-            return cleanSpacesAroundTags(tr, text);
-        } catch (SocketException ex) {
-            Log.log(ex);
-        }
-        return null;
-    }
-
-    // for test stub
-    protected ProjectProperties getProjectProperties() {
-        return Core.getProject().getProjectProperties();
+        return params;
     }
 
     /**
@@ -205,8 +214,8 @@ public class DeepLTranslate extends BaseCachedTranslate {
                 }
             }
         } catch (Exception e) {
-            LOGGER.atError().setCause(e).setMessageRB("MT_JSON_ERROR").log();
-            throw new MachineTranslateError(BUNDLE.getString("MT_JSON_ERROR"));
+            LOGGER.atError().setCause(e).setMessageRB("MT_JSON_PARSE_ERROR").log();
+            throw new MachineTranslateError(BUNDLE.getString("MT_JSON_PARSE_ERROR"));
         }
         LOGGER.atError().setMessageRB("MT_JSON_ERROR").log();
         throw new MachineTranslateError(BUNDLE.getString("MT_JSON_ERROR"));

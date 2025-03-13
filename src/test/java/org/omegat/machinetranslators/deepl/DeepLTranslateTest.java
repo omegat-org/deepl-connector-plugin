@@ -46,7 +46,7 @@ import org.omegat.util.PreferencesImpl;
 import org.omegat.util.PreferencesXML;
 import org.omegat.util.RuntimePreferences;
 
-@WireMockTest(httpsEnabled = true)
+@WireMockTest
 public class DeepLTranslateTest {
 
     private File tmpDir;
@@ -59,6 +59,13 @@ public class DeepLTranslateTest {
     public final void setUp() throws IOException {
         tmpDir = Files.createTempDirectory("omegat").toFile();
         Assertions.assertTrue(tmpDir.isDirectory());
+        File prefsFile = new File(tmpDir, Preferences.FILE_PREFERENCES);
+        Preferences.IPreferences prefs = new PreferencesImpl(new PreferencesXML(null, prefsFile));
+        prefs.setPreference(DeepLTranslate.ALLOW_DEEPL_TRANSLATE, true);
+        RuntimePreferences.setConfigDir(prefsFile.getAbsolutePath());
+        Preferences.init();
+        Preferences.initFilters();
+        Preferences.initSegmentation();
     }
 
     /**
@@ -71,37 +78,22 @@ public class DeepLTranslateTest {
     }
 
     @Test
-    void testGetJsonResults(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
-        File prefsFile = new File(tmpDir, Preferences.FILE_PREFERENCES);
-        Preferences.IPreferences prefs = new PreferencesImpl(new PreferencesXML(null, prefsFile));
-        prefs.setPreference(DeepLTranslate.ALLOW_DEEPL_TRANSLATE, true);
-        init(prefsFile.getAbsolutePath());
-
-        DeepLTranslate deepLTranslate = new DeepLTranslate();
+    void testGetJsonResults() throws Exception {
+        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub();
         String json = "{ \"translations\": [ { \"detected_source_language\": \"DE\", \"text\": \"Hello World!\" } ] }";
         String result = deepLTranslate.getJsonResults(json);
         assertEquals("Hello World!", result);
     }
 
     @Test
-    void testGetJsonResultsWithWrongJson(WireMockRuntimeInfo wireMockRuntimeInfo) {
-        File prefsFile = new File(tmpDir, Preferences.FILE_PREFERENCES);
-        Preferences.IPreferences prefs = new PreferencesImpl(new PreferencesXML(null, prefsFile));
-        prefs.setPreference(DeepLTranslate.ALLOW_DEEPL_TRANSLATE, true);
-        init(prefsFile.getAbsolutePath());
-
-        DeepLTranslate deepLTranslate = new DeepLTranslate();
+    void testGetJsonResultsWithWrongJson() {
+        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub();
         String json = "{ \"response\": \"failed\" }";
         assertThrows(Exception.class, () -> deepLTranslate.getJsonResults(json));
     }
 
     @Test
     void testResponse(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
-        File prefsFile = new File(tmpDir, Preferences.FILE_PREFERENCES);
-        Preferences.IPreferences prefs = new PreferencesImpl(new PreferencesXML(null, prefsFile));
-        prefs.setPreference(DeepLTranslate.ALLOW_DEEPL_TRANSLATE, true);
-        init(prefsFile.getAbsolutePath());
-
         String key = "deepl8api8key";
 
         WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v1/translate"))
@@ -116,8 +108,8 @@ public class DeepLTranslateTest {
                         .withBody("{ \"translations\":[ "
                                 + "{ \"detected_source_language\": \"DE\", \"text\": \"Hello World!\" }"
                                 + " ] }")));
-        WireMock.stubFor(WireMock.get(WireMock.anyUrl())
-                .willReturn(WireMock.aResponse().withStatus(404)));
+        WireMock.stubFor(
+                WireMock.get(WireMock.anyUrl()).willReturn(WireMock.aResponse().withStatus(404)));
 
         int port = wireMockRuntimeInfo.getHttpPort();
         String url = String.format("http://localhost:%d", port);
@@ -127,21 +119,10 @@ public class DeepLTranslateTest {
         assertEquals("Hello World!", result);
     }
 
-    /**
-     * Initialize preferences for test.
-     * @param configDir to create omegat.prefs.
-     */
-    public static synchronized void init(String configDir) {
-        RuntimePreferences.setConfigDir(configDir);
-        Preferences.init();
-        Preferences.initFilters();
-        Preferences.initSegmentation();
-    }
-
     static class DeepLTranslateTestStub extends DeepLTranslate {
 
         DeepLTranslateTestStub() {
-            super();
+            super("", "key");
         }
 
         DeepLTranslateTestStub(String url, String key) {

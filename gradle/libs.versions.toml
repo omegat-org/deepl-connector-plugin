@@ -1,6 +1,5 @@
 [versions]
 slf4j = "2.0.7"
-junit = "4.13.2"
 junit5 = "5.12.0"
 slf4j_format = "0.5.1"
 commons_io = "2.18.0"
@@ -12,7 +11,6 @@ wiremock = "3.12.1"
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
 slf4j-format-jdk14 ={group = "tokyo.northside", name = "slf4j-format-jdk14",  version.ref = "slf4j_format"}
 slf4j-simple = {group = "org.slf4j", name = "slf4j-simple",  version.ref = "slf4j"}
-junit4 = {group = "junit", name = "junit", version.ref = "junit"}
 junit-jupiter = {group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5"}
 commons-io = {group = "commons-io", name = "commons-io", version.ref = "commons_io"}
 commons-text = {group = "org.apache.commons", name = "commons-text", version.ref = "commons_text"}

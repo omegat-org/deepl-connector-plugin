@@ -60,11 +60,11 @@ dependencies {
     compileOnly(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
 
-    testImplementation(libs.jackson.core)
-    testImplementation(libs.jackson.databind)
-    testImplementation(libs.wiremock)
+    testRuntimeOnly(libs.jackson.core)
+    testRuntimeOnly(libs.jackson.databind)
 }
 
 
