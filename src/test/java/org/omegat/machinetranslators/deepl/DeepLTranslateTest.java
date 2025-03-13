@@ -119,7 +119,7 @@ public class DeepLTranslateTest {
         WireMock.stubFor(WireMock.get(WireMock.anyUrl())
                 .willReturn(WireMock.aResponse().withStatus(404)));
 
-        int port = wireMockRuntimeInfo.getHttpsPort();
+        int port = wireMockRuntimeInfo.getHttpPort();
         String url = String.format("http://localhost:%d", port);
         String sourceText = "source text";
         DeepLTranslate deepLTranslate = new DeepLTranslateTestStub(url, key);
