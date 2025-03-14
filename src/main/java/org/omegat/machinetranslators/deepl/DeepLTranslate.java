@@ -139,10 +139,11 @@ public class DeepLTranslate extends BaseCachedTranslate {
         }
         Map<String, String> params = createRequest(sLang, tLang, trText);
         Map<String, String> headers = new TreeMap<>();
+        String request = createJson(params);
 
         String v;
         try {
-            v = HttpConnectionUtils.get(deepLUrl, params, headers, "UTF-8");
+            v = HttpConnectionUtils.postJSON(deepLUrl, request, headers);
         } catch (IOException e) {
             LOGGER.atError().setCause(e).setMessage("Connection error").log();
             return null;
@@ -196,6 +197,10 @@ public class DeepLTranslate extends BaseCachedTranslate {
         params.put("auth_key", apiKey);
 
         return params;
+    }
+
+    protected String createJson(Map<String, String> params) {
+        return null;
     }
 
     /**
