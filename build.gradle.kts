@@ -60,6 +60,7 @@ dependencies {
     compileOnly(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.json.unit)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
 
@@ -70,7 +71,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
     withSourcesJar()
     withJavadocJar()

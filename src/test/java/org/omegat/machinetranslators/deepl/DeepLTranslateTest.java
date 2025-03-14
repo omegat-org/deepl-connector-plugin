@@ -25,6 +25,8 @@
 
 package org.omegat.machinetranslators.deepl;
 
+import static net.javacrumbs.jsonunit.JsonMatchers.jsonEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -34,12 +36,14 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.omegat.core.data.ProjectProperties;
+import org.omegat.core.machinetranslators.MachineTranslateError;
 import org.omegat.util.Language;
 import org.omegat.util.Preferences;
 import org.omegat.util.PreferencesImpl;
@@ -75,6 +79,21 @@ public class DeepLTranslateTest {
     @AfterEach
     public final void tearDown() throws IOException {
         FileUtils.deleteDirectory(tmpDir);
+    }
+
+    @Test
+    void testCreateRequest() throws MachineTranslateError {
+        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub("", "key");
+        String text = "Hello";
+        Language sLang = new Language("EN");
+        Language tLang = new Language("FR");
+        Map<String, String> params = deepLTranslate.createRequest(sLang, tLang, text);
+        String json = deepLTranslate.createJson(params);
+        assertThat(
+                json,
+                jsonEquals("{\"text\":\"Hello\",\"target_lang\":\"FR\",\"source_lang\":\"EN\","
+                        + "\"auth_key\": \"key\",\"split_sentences\":\"0\",\"preserve_formatting\":\"1\","
+                        + "\"tag_handling\":\"xml\"}"));
     }
 
     @Test

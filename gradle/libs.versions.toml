@@ -6,6 +6,7 @@ commons_io = "2.18.0"
 commons_text = "1.13.0"
 jackson = "2.16.1"
 wiremock = "3.12.1"
+json_unit = "4.1.0"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
@@ -17,6 +18,7 @@ commons-text = {group = "org.apache.commons", name = "commons-text", version.ref
 jackson-core = {group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson"}
 jackson-databind = {group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson"}
 wiremock = {group = "org.wiremock", name = "wiremock", version.ref = "wiremock"}
+json-unit = {group ="net.javacrumbs.json-unit", name = "json-unit", version.ref = "json_unit"}
 
 [plugins]
 git-version = {id = "com.palantir.git-version", version = "3.1.0"}
