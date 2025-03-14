@@ -92,8 +92,7 @@ public class DeepLTranslateTest {
         assertThat(
                 json,
                 jsonEquals("{\"text\":\"Hello\",\"target_lang\":\"FR\",\"source_lang\":\"EN\","
-                        + "\"auth_key\": \"key\",\"split_sentences\":\"0\",\"preserve_formatting\":\"1\","
-                        + "\"tag_handling\":\"xml\"}"));
+                        + "\"split_sentences\":\"0\",\"preserve_formatting\":\"1\",\"tag_handling\":\"xml\"}"));
     }
 
     @Test
@@ -116,11 +115,11 @@ public class DeepLTranslateTest {
         String key = "deepl8api8key";
 
         WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v1/translate"))
+                .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
                 .withRequestBody(WireMock.matchingJsonPath("$.text", WireMock.equalTo("source text")))
                 .withRequestBody(WireMock.matchingJsonPath("$.source_lang", WireMock.equalTo("DE")))
                 .withRequestBody(WireMock.matchingJsonPath("$.target_lang", WireMock.equalTo("EN")))
                 .withRequestBody(WireMock.matchingJsonPath("$.tag_handling", WireMock.equalTo("xml")))
-                .withRequestBody(WireMock.matchingJsonPath("$.auth_key"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
