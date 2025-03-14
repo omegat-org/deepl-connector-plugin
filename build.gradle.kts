@@ -52,19 +52,16 @@ repositories {
 dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.slf4j.format.jdk14)
-    compileOnly(libs.commons.io)
-    compileOnly(libs.commons.text)
+    implementation(libs.commons.io)
+    implementation(libs.commons.text)
 
     // JSON parser
-    compileOnly(libs.jackson.core)
-    compileOnly(libs.jackson.databind)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
-
-    testRuntimeOnly(libs.jackson.core)
-    testRuntimeOnly(libs.jackson.databind)
 }
 
 
@@ -79,11 +76,8 @@ java {
 tasks.named<Test>("test") {
     useJUnitPlatform()
 }
-
-tasks.jar {
-    manifest {
-        attributes("Automatic-Module-Name" to "org.omegat.machinetranslators.deepl")
-    }
+val jar by tasks.getting(Jar::class) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 publishing {
