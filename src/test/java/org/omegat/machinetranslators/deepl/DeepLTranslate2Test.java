@@ -25,6 +25,7 @@
 
 package org.omegat.machinetranslators.deepl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,7 +48,7 @@ import org.omegat.util.PreferencesXML;
 import org.omegat.util.RuntimePreferences;
 
 @WireMockTest
-public class DeepLTranslateTest {
+public class DeepLTranslate2Test {
 
     private File tmpDir;
 
@@ -61,7 +62,7 @@ public class DeepLTranslateTest {
         Assertions.assertTrue(tmpDir.isDirectory());
         File prefsFile = new File(tmpDir, Preferences.FILE_PREFERENCES);
         Preferences.IPreferences prefs = new PreferencesImpl(new PreferencesXML(null, prefsFile));
-        prefs.setPreference(DeepLTranslate.ALLOW_DEEPL_TRANSLATE, true);
+        prefs.setPreference(DeepLTranslate2.ALLOW_DEEPL_TRANSLATE, true);
         RuntimePreferences.setConfigDir(prefsFile.getAbsolutePath());
         Preferences.init();
         Preferences.initFilters();
@@ -79,7 +80,7 @@ public class DeepLTranslateTest {
 
     @Test
     void testGetJsonResults() throws Exception {
-        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub();
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub();
         String json = "{ \"translations\": [ { \"detected_source_language\": \"DE\", \"text\": \"Hello World!\" } ] }";
         String result = deepLTranslate.getJsonResults(json);
         assertEquals("Hello World!", result);
@@ -87,7 +88,7 @@ public class DeepLTranslateTest {
 
     @Test
     void testGetJsonResultsWithWrongJson() {
-        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub();
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub();
         String json = "{ \"response\": \"failed\" }";
         assertThrows(Exception.class, () -> deepLTranslate.getJsonResults(json));
     }
@@ -97,16 +98,15 @@ public class DeepLTranslateTest {
         String key = "deepl8api8key";
 
         WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v1/translate"))
-                .withRequestBody(WireMock.matchingJsonPath("$.text", WireMock.equalTo("source text")))
-                .withRequestBody(WireMock.matchingJsonPath("$.source_lang", WireMock.equalTo("DE")))
-                .withRequestBody(WireMock.matchingJsonPath("$.target_lang", WireMock.equalTo("EN")))
-                .withRequestBody(WireMock.matchingJsonPath("$.tag_handling", WireMock.equalTo("xml")))
-                .withRequestBody(WireMock.matchingJsonPath("$.auth_key"))
+                .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
+                .withRequestBody(containing("text=source+text"))
+                .withRequestBody(containing("source_lang=de-DE"))
+                .withRequestBody(containing("target_lang=en-US"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{ \"translations\":[ "
-                                + "{ \"detected_source_language\": \"DE\", \"text\": \"Hello World!\" }"
+                                + "{ \"detected_source_language\": \"DE\", \"text\": \"Hello World!\", \"billed_characters\": 11 }"
                                 + " ] }")));
         WireMock.stubFor(
                 WireMock.get(WireMock.anyUrl()).willReturn(WireMock.aResponse().withStatus(404)));
@@ -114,18 +114,18 @@ public class DeepLTranslateTest {
         int port = wireMockRuntimeInfo.getHttpPort();
         String url = String.format("http://localhost:%d", port);
         String sourceText = "source text";
-        DeepLTranslate deepLTranslate = new DeepLTranslateTestStub(url, key);
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
         String result = deepLTranslate.translate(new Language("DE"), new Language("EN"), sourceText);
         assertEquals("Hello World!", result);
     }
 
-    static class DeepLTranslateTestStub extends DeepLTranslate {
+    static class DeepLTranslate2TestStub extends DeepLTranslate2 {
 
-        DeepLTranslateTestStub() {
+        DeepLTranslate2TestStub() {
             super("", "key");
         }
 
-        DeepLTranslateTestStub(String url, String key) {
+        DeepLTranslate2TestStub(String url, String key) {
             super(url, key);
         }
 

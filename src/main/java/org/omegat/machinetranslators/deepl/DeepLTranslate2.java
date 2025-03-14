@@ -58,14 +58,14 @@ import tokyo.northside.logging.LoggerFactory;
  *
  * @see <a href="https://www.deepl.com/api.html">Translation API</a>
  */
-public class DeepLTranslate extends BaseCachedTranslate {
+public class DeepLTranslate2 extends BaseCachedTranslate {
 
     public static final String ALLOW_DEEPL_TRANSLATE = "allow_deepl_translate";
 
     protected static final String PROPERTY_API_KEY = "deepl.api.key";
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.Bundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
-    private static final ILogger LOGGER = LoggerFactory.getLogger(DeepLTranslate.class, BUNDLE);
+    private static final ILogger LOGGER = LoggerFactory.getLogger(DeepLTranslate2.class, BUNDLE);
 
     private static final String FILLER = "...";
     private static final int FILLER_LEN = FILLER.length();
@@ -95,14 +95,14 @@ public class DeepLTranslate extends BaseCachedTranslate {
      */
     @SuppressWarnings("unused")
     public static void loadPlugins() {
-        Core.registerMachineTranslationClass(DeepLTranslate.class);
+        Core.registerMachineTranslationClass(DeepLTranslate2.class);
     }
 
     @SuppressWarnings("unused")
     public static void unloadPlugins() {}
 
     @SuppressWarnings("unused")
-    public DeepLTranslate() {
+    public DeepLTranslate2() {
         deepLUrl = DEEPL_V1_URL;
     }
 
@@ -114,7 +114,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
      * @param key
      *            temporary api key
      */
-    public DeepLTranslate(String baseUrl, String key) {
+    public DeepLTranslate2(String baseUrl, String key) {
         deepLUrl = baseUrl + DEEPL_PATH;
         temporaryKey = key;
     }
