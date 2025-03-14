@@ -1,5 +1,5 @@
 [versions]
-slf4j = "2.0.7"
+slf4j = "2.0.17"
 junit5 = "5.12.0"
 jackson = "2.16.1"
 wiremock = "3.12.1"
