@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Window;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -130,18 +129,20 @@ public class DeepLTranslate extends BaseCachedTranslate {
         return BUNDLE.getString("MT_ENGINE_DEEPL");
     }
 
-    protected int getMaxTextLength() {
-        return MAX_TEXT_LENGTH;
-    }
-
     @Override
     protected String translate(Language sLang, Language tLang, String text) throws MachineTranslateError {
-        Map<String, String> request = createRequest(sLang, tLang, getTruncatedText(text));
+        String trText;
+        if (text.length() > MAX_TEXT_LENGTH) {
+            trText = getTruncatedText(text);
+        } else {
+            trText = text;
+        }
+        Map<String, String> params = createRequest(sLang, tLang, trText);
         Map<String, String> headers = new TreeMap<>();
 
         String v;
         try {
-            v = HttpConnectionUtils.get(deepLUrl, request, headers, "UTF-8");
+            v = HttpConnectionUtils.get(deepLUrl, params, headers, "UTF-8");
         } catch (IOException e) {
             LOGGER.atError().setCause(e).setMessage("Connection error").log();
             return null;
@@ -162,7 +163,8 @@ public class DeepLTranslate extends BaseCachedTranslate {
     /**
      * Create request and return as json string.
      */
-    protected Map<String, String> createRequest(Language sLang, Language tLang, String trText) throws MachineTranslateError {
+    protected Map<String, String> createRequest(Language sLang, Language tLang, String trText)
+            throws MachineTranslateError {
         String apiKey = getCredential(PROPERTY_API_KEY);
         if (apiKey == null || apiKey.isEmpty()) {
             if (temporaryKey == null) {
@@ -266,6 +268,6 @@ public class DeepLTranslate extends BaseCachedTranslate {
      * @return truncated text.
      */
     private String getTruncatedText(String text) {
-        return text.substring(0, getMaxTextLength() - FILLER_LEN) + FILLER;
+        return text.substring(0, MAX_TEXT_LENGTH - FILLER_LEN) + FILLER;
     }
 }
