@@ -44,8 +44,6 @@ import org.omegat.core.machinetranslators.MachineTranslateError;
 import org.omegat.gui.exttrans.MTConfigDialog;
 import org.omegat.util.HttpConnectionUtils;
 import org.omegat.util.Language;
-import tokyo.northside.logging.ILogger;
-import tokyo.northside.logging.LoggerFactory;
 
 /**
  * Support of DeepL machine translation.
@@ -63,9 +61,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     public static final String ALLOW_DEEPL_TRANSLATE = "allow_deepl_translate";
 
     protected static final String PROPERTY_API_KEY = "deepl.api.key";
-    private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.Bundle";
+    private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
-    private static final ILogger LOGGER = LoggerFactory.getLogger(DeepLTranslate2.class, BUNDLE);
 
     private static final String FILLER = "...";
     private static final int FILLER_LEN = FILLER.length();
@@ -144,8 +141,7 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         try {
             v = HttpConnectionUtils.get(deepLUrl, params, headers, "UTF-8");
         } catch (IOException e) {
-            LOGGER.atError().setCause(e).setMessage("Connection error").log();
-            return null;
+            throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"), e);
         }
         String tr = getJsonResults(v);
         if (tr == null) {
@@ -220,10 +216,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
                 }
             }
         } catch (Exception e) {
-            LOGGER.atError().setCause(e).setMessageRB("MT_JSON_PARSE_ERROR").log();
             throw new MachineTranslateError(BUNDLE.getString("MT_JSON_PARSE_ERROR"));
         }
-        LOGGER.atError().setMessageRB("MT_JSON_ERROR").log();
         throw new MachineTranslateError(BUNDLE.getString("MT_JSON_ERROR"));
     }
 

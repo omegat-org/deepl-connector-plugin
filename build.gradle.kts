@@ -50,11 +50,6 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.slf4j.api)
-    implementation(libs.slf4j.format.jdk14)
-    implementation(libs.commons.io)
-    implementation(libs.commons.text)
-
     // JSON parser
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)

@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 import org.junit.jupiter.api.Test;
 
 public class BundleTest extends CommonVerifications {
-    private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.Bundle";
+    private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
 
     @Test
     public void testBundleEncodings() throws Exception {
