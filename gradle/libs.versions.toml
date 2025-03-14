@@ -1,5 +1,5 @@
 [versions]
-slf4j = "2.0.7"
+slf4j = "2.0.17"
 junit5 = "5.12.0"
 slf4j_format = "0.5.1"
 commons_io = "2.18.0"
