@@ -8,7 +8,8 @@ Because OmegaT genuine connector, which bundled in OmegaT 6.0 and before, uses `
 Here is a placeholder to host DeepL connector development.
 OmegaT project wait a contribution who are interested in the use of DeepL.
 
+This project has an old no-functional source code from OmegaT.
+
 ## License
 
-This project has an old no-functional source code from OmegaT. 
 The plugin project is licensed with GPL-3.
