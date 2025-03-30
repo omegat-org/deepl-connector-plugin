@@ -27,7 +27,6 @@ package org.omegat.machinetranslators.deepl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -79,21 +78,6 @@ public class DeepLTranslate2Test {
     }
 
     @Test
-    void testGetJsonResults() throws Exception {
-        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub();
-        String json = "{ \"translations\": [ { \"detected_source_language\": \"DE\", \"text\": \"Hello World!\" } ] }";
-        String result = deepLTranslate.getJsonResults(json);
-        assertEquals("Hello World!", result);
-    }
-
-    @Test
-    void testGetJsonResultsWithWrongJson() {
-        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub();
-        String json = "{ \"response\": \"failed\" }";
-        assertThrows(Exception.class, () -> deepLTranslate.getJsonResults(json));
-    }
-
-    @Test
     void testResponse(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
         String key = "deepl8api8key";
 
@@ -115,15 +99,11 @@ public class DeepLTranslate2Test {
         String url = String.format("http://localhost:%d", port);
         String sourceText = "source text";
         DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
-        String result = deepLTranslate.translate(new Language("DE"), new Language("EN"), sourceText);
+        String result = deepLTranslate.translate(new Language("de-DE"), new Language("en-US"), sourceText);
         assertEquals("Hello World!", result);
     }
 
     static class DeepLTranslate2TestStub extends DeepLTranslate2 {
-
-        DeepLTranslate2TestStub() {
-            super("", "key");
-        }
 
         DeepLTranslate2TestStub(String url, String key) {
             super(url, key);

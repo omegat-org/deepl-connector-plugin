@@ -29,20 +29,21 @@
 
 package org.omegat.machinetranslators.deepl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.deepl.api.DeepLApiVersion;
+import com.deepl.api.DeepLClient;
+import com.deepl.api.DeepLClientOptions;
+import com.deepl.api.DeepLException;
+import com.deepl.api.SentenceSplittingMode;
+import com.deepl.api.TextResult;
+import com.deepl.api.TextTranslationOptions;
 import java.awt.Window;
-import java.io.IOException;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.TreeMap;
 import org.omegat.core.Core;
 import org.omegat.core.data.ProjectProperties;
 import org.omegat.core.machinetranslators.BaseCachedTranslate;
 import org.omegat.core.machinetranslators.BaseTranslate;
 import org.omegat.core.machinetranslators.MachineTranslateError;
 import org.omegat.gui.exttrans.MTConfigDialog;
-import org.omegat.util.HttpConnectionUtils;
 import org.omegat.util.Language;
 
 /**
@@ -55,6 +56,7 @@ import org.omegat.util.Language;
  * @author Hiroshi Miura
  *
  * @see <a href="https://www.deepl.com/api.html">Translation API</a>
+ * @see <a href="https://github.com/DeepLcom/deepl-java">DeepL Java library</a>
  */
 public class DeepLTranslate2 extends BaseCachedTranslate {
 
@@ -64,30 +66,13 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
 
-    private static final String FILLER = "...";
-    private static final int FILLER_LEN = FILLER.length();
+    protected static final String DEEPL_URL = "https://api.deepl.com";
+    protected static final String DEEPL_URL_FREE = "https://api-free.deepl.com";
 
+    protected final String deepLServerUrl;
     private String temporaryKey = null;
 
-    protected static final String DEEPL_V1_URL = "https://api.deepl.com/v1/translate";
-
-    // DO NOT MOVE TO THE V2 API until it becomes available for CAT tool
-    // integration.
-    //
-    // > Version 2 (v2) of the DeepL API is not compatible with CAT tools and is
-    // > not included in DeepL plans for CAT tool users.
-    //
-    // See https://www.deepl.com/docs-api/accessing-the-api/api-versions/
-    protected static final String DEEPL_PATH = "/v1/translate";
-    protected final String deepLUrl;
-
-    // See
-    // https://support.deepl.com/hc/en-us/articles/4405712799250-Character-count-for-translation-within
-    // -applications
-    // max application limit is 5000 characters.
-    private static final int MAX_TEXT_LENGTH = 5000;
-
-    /**
+    /*
      * Register plugins into OmegaT.
      */
     @SuppressWarnings("unused")
@@ -100,7 +85,15 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
 
     @SuppressWarnings("unused")
     public DeepLTranslate2() {
-        deepLUrl = DEEPL_V1_URL;
+        deepLServerUrl = DEEPL_URL;
+    }
+
+    public DeepLTranslate2(Boolean freeApi) {
+        if (freeApi) {
+            deepLServerUrl = DEEPL_URL_FREE;
+        } else {
+            deepLServerUrl = DEEPL_URL;
+        }
     }
 
     /**
@@ -112,7 +105,7 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
      *            temporary api key
      */
     public DeepLTranslate2(String baseUrl, String key) {
-        deepLUrl = baseUrl + DEEPL_PATH;
+        deepLServerUrl = baseUrl;
         temporaryKey = key;
     }
 
@@ -128,39 +121,6 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
 
     @Override
     protected String translate(Language sLang, Language tLang, String text) throws MachineTranslateError {
-        String trText;
-        if (text.length() > MAX_TEXT_LENGTH) {
-            trText = getTruncatedText(text);
-        } else {
-            trText = text;
-        }
-        Map<String, String> params = createRequest(sLang, tLang, trText);
-        Map<String, String> headers = new TreeMap<>();
-
-        String v;
-        try {
-            v = HttpConnectionUtils.get(deepLUrl, params, headers, "UTF-8");
-        } catch (IOException e) {
-            throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"), e);
-        }
-        String tr = getJsonResults(v);
-        if (tr == null) {
-            return null;
-        }
-        tr = BaseTranslate.unescapeHTML(tr);
-        return cleanSpacesAroundTags(tr, text);
-    }
-
-    // for test stub
-    protected ProjectProperties getProjectProperties() {
-        return Core.getProject().getProjectProperties();
-    }
-
-    /**
-     * Create request and return as json string.
-     */
-    protected Map<String, String> createRequest(Language sLang, Language tLang, String trText)
-            throws MachineTranslateError {
         String apiKey = getCredential(PROPERTY_API_KEY);
         if (apiKey == null || apiKey.isEmpty()) {
             if (temporaryKey == null) {
@@ -168,57 +128,33 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
             }
             apiKey = temporaryKey;
         }
-
-        Map<String, String> params = new TreeMap<>();
-
-        // No check is done, but only "EN", "DE", "FR", "ES", "IT", "NL", "PL"
-        // are supported right now.
-
-        params.put("text", trText);
-        params.put("source_lang", sLang.getLanguageCode().toUpperCase());
-        params.put("target_lang", tLang.getLanguageCode().toUpperCase());
-        params.put("tag_handling", "xml");
-
-        // Check if sentence does the project segmentation
+        DeepLClientOptions deepLClientOptions = new DeepLClientOptions();
+        deepLClientOptions.setApiVersion(DeepLApiVersion.VERSION_1).setServerUrl(deepLServerUrl);
         ProjectProperties projectProperties = getProjectProperties();
-        String splitSentence; // can be null when testing
-        if (projectProperties != null && projectProperties.isSentenceSegmentingEnabled()) {
-            splitSentence = "1";
-        } else {
-            splitSentence = "0";
-        }
-        params.put("split_sentences", splitSentence);
-        params.put("preserve_formatting", "1");
-        params.put("auth_key", apiKey);
+        DeepLClient client = new DeepLClient(apiKey, deepLClientOptions);
 
-        return params;
+        String sourceLang = sLang.getLanguage();
+        String targetLang = tLang.getLanguage();
+        TextTranslationOptions textTranslationOptions = new TextTranslationOptions();
+
+        if (projectProperties != null && projectProperties.isSentenceSegmentingEnabled()) {
+            textTranslationOptions.setSentenceSplittingMode(SentenceSplittingMode.All);
+        }
+
+        TextResult result;
+        try {
+            result = client.translateText(text, sourceLang, targetLang, textTranslationOptions);
+        } catch (DeepLException | InterruptedException e) {
+            throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"));
+        }
+        String tr = result.getText();
+        tr = BaseTranslate.unescapeHTML(tr);
+        return cleanSpacesAroundTags(tr, text);
     }
 
-    /**
-     * Parse API response and return translated text.
-     *
-     * @param json
-     *            API response json string.
-     * @return translation, or null when API returns empty result, or error
-     *         message when parse failed.
-     */
-    protected String getJsonResults(String json) throws MachineTranslateError {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // { "translations": [ { "detected_source_language": "DE", "text":
-            // "Hello World!" } ] }
-            JsonNode rootNode = mapper.readTree(json);
-            JsonNode translations = rootNode.get("translations");
-            if (translations != null && translations.has(0)) {
-                JsonNode textNode = translations.get(0).get("text");
-                if (textNode != null) {
-                    return translations.get(0).get("text").asText();
-                }
-            }
-        } catch (Exception e) {
-            throw new MachineTranslateError(BUNDLE.getString("MT_JSON_PARSE_ERROR"));
-        }
-        throw new MachineTranslateError(BUNDLE.getString("MT_JSON_ERROR"));
+    // for test stub
+    protected ProjectProperties getProjectProperties() {
+        return Core.getProject().getProjectProperties();
     }
 
     /**
@@ -252,16 +188,5 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         dialog.panel.temporaryCheckBox.setSelected(isCredentialStoredTemporarily(PROPERTY_API_KEY));
 
         dialog.show();
-    }
-
-    /**
-     * Get truncated text into maximum text length that MT engine API allowed.
-     *
-     * @param text
-     *            original source text.
-     * @return truncated text.
-     */
-    private String getTruncatedText(String text) {
-        return text.substring(0, MAX_TEXT_LENGTH - FILLER_LEN) + FILLER;
     }
 }

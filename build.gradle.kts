@@ -50,9 +50,7 @@ repositories {
 }
 
 dependencies {
-    // JSON parser
-    implementation(libs.jackson.core)
-    implementation(libs.jackson.databind)
+    packIntoJar("com.deepl.api:deepl-java:1.9.0")
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
