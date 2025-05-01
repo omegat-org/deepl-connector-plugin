@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    packIntoJar("com.deepl.api:deepl-java:1.9.0")
+    packIntoJar("com.deepl.api:deepl-java:1.10.0")
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
