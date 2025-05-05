@@ -41,3 +41,5 @@ jobs:
         file: build/libs/deepl-connector-plugin-${{ steps.get_version.outputs.VERSION }}.jar
         tag: ${{ github.ref }}
         overwrite: true
+    - name: Publish to OmegaT plugin test repository
+      run: ./gradlew -PenvIsCi=true publishMavenJavaPublicationToReleasesRepository

@@ -94,8 +94,16 @@ publishing {
     }
     repositories {
         maven {
-            name = "OmegaTPluginsRepo"
-            url = uri("https://maven.northside.tokyo/repository/maven-releases/")
+            name = "Releases"
+            url = uri("https://maven.northside.tokyo/releases/")
+            credentials {
+                username = project.findProperty("mavenUser") as String? ?: System.getenv("MAVEN_USER")
+                password = project.findProperty("mavenPassword") as String? ?: System.getenv("MAVEN_PASSWORD")
+            }
+        }
+        maven {
+            name = "Snapshots"
+            url = uri("https://maven.northside.tokyo/snapshots/")
             credentials {
                 username = project.findProperty("mavenUser") as String? ?: System.getenv("MAVEN_USER")
                 password = project.findProperty("mavenPassword") as String? ?: System.getenv("MAVEN_PASSWORD")
