@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.spotless)
     alias(libs.plugins.git.version) apply false
-    alias(libs.plugins.nexus.publish)
     alias(libs.plugins.omegat)
 }
 
@@ -36,7 +35,7 @@ if (dotgit.exists()) {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
-    gradleVersion = "8.10"
+    gradleVersion = "8.13"
 }
 
 omegat {
@@ -62,15 +61,10 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
-}
-val jar by tasks.getting(Jar::class) {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 publishing {
@@ -98,6 +92,17 @@ publishing {
             }
         }
     }
+    repositories {
+        maven {
+            name = "OmegaTPluginsRepo"
+            url = uri("https://maven.northside.tokyo/repository/maven-releases/")
+            credentials {
+                username = project.findProperty("mavenUser") as String? ?: System.getenv("MAVEN_USER")
+                password = project.findProperty("mavenPassword") as String? ?: System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+
 }
 
 val signKey = listOf("signingKey", "signing.keyId", "signing.gnupg.keyName").find { project.hasProperty(it) }
@@ -126,10 +131,6 @@ tasks.withType<Javadoc>() {
     options {
         jFlags("-Duser.language=en")
     }
-}
-
-nexusPublishing.repositories {
-    sonatype()
 }
 
 tasks.withType<Copy> {
