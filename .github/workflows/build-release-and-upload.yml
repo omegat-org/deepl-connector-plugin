@@ -1,4 +1,4 @@
-name: Upload Assets to OSSRH
+name: Create release and upload asset
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Upload Release Asset
+    name: Create Release and Upload Asset
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -22,7 +22,8 @@ jobs:
         REV_COUNT=`git rev-list --count HEAD`
         echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
     - uses: gradle/gradle-build-action@v3
-    - run: ./gradlew -PenvIsCi=true check
+    - name: Build and check
+      run: ./gradlew -PenvIsCi=true build
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -33,10 +34,10 @@ jobs:
         release_name: Release v${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
-    - name: Publish package to OSSRH
-      run: ./gradlew publishToSonatype
-      env:
-        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SECRET_KEY }}
-        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSPHARASE }}
-        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-        SONATYPE_PASS: ${{ secrets.SONATYPE_PASS }}
+    - name: Upload to Release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/libs/deepl-connector-plugin-${{ steps.get_version.outputs.VERSION }}.jar
+        tag: ${{ github.ref }}
+        overwrite: true
