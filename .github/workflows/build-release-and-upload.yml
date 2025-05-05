@@ -22,6 +22,8 @@ jobs:
         REV_COUNT=`git rev-list --count HEAD`
         echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
     - uses: gradle/gradle-build-action@v3
+      name: Setup Gradle
+      id: setup-gradle
     - name: Build and check
       run: ./gradlew -PenvIsCi=true build
     - name: Create Release
