@@ -1,6 +1,6 @@
 [versions]
 slf4j = "2.0.7"
-junit5 = "5.12.2"
+junit5 = "5.13.1"
 wiremock = "3.13.0"
 
 [libraries]
