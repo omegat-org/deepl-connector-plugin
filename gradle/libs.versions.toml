@@ -1,7 +1,7 @@
 [versions]
 slf4j = "2.0.7"
 junit5 = "5.13.4"
-wiremock = "3.13.0"
+wiremock = "3.13.1"
 
 [libraries]
 slf4j-simple = {group = "org.slf4j", name = "slf4j-simple",  version.ref = "slf4j"}
