@@ -27,4 +27,5 @@ build
 .gradle
 out
 version.properties
-.idea
+.idea/.project
+/bin/
