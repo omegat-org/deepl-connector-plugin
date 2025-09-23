@@ -24,7 +24,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.omegat.machinetranslators.deepl;
+package org.omegat.connectors.machinetranslators.deepl;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
