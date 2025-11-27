@@ -11,6 +11,6 @@ wiremock = {group = "org.wiremock", name = "wiremock", version.ref = "wiremock"}
 [plugins]
 git-version = {id = "com.palantir.git-version", version = "4.0.0"}
 nexus-publish = {id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0"}
-spotbugs = {id = "com.github.spotbugs", version = "6.4.0"}
+spotbugs = {id = "com.github.spotbugs", version = "6.4.6"}
 spotless = {id = "com.diffplug.spotless", version = "7.2.1"}
 omegat = {id = "org.omegat.gradle", version = "2.0.0-rc2"}
