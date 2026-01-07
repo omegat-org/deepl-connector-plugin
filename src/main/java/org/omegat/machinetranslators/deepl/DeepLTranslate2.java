@@ -60,9 +60,9 @@ import org.omegat.util.Language;
  */
 public class DeepLTranslate2 extends BaseCachedTranslate {
 
-    public static final String ALLOW_DEEPL_TRANSLATE = "allow_deepl_translate";
+    public static final String ALLOW_DEEPL_TRANSLATE = "allow_deepl_v2api_translate";
 
-    protected static final String PROPERTY_API_KEY = "deepl.api.key";
+    protected static final String PROPERTY_API_KEY = "deepl.v2api.key";
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
 
