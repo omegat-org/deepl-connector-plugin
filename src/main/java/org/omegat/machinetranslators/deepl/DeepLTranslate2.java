@@ -66,10 +66,12 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
 
-    protected static final String DEEPL_URL = "https://api.deepl.com";
-    protected static final String DEEPL_URL_FREE = "https://api-free.deepl.com";
-
+    /**
+     * Custom server URL, only set for testing. When null, the library auto-detects
+     * Free vs Pro API based on the API key (Free keys end with ":fx").
+     */
     protected final String deepLServerUrl;
+
     private String temporaryKey = null;
 
     /*
@@ -83,24 +85,20 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     @SuppressWarnings("unused")
     public static void unloadPlugins() {}
 
+    /**
+     * Default constructor. The DeepL library will auto-detect whether to use
+     * the Free or Pro API based on the API key (Free keys end with ":fx").
+     */
     @SuppressWarnings("unused")
     public DeepLTranslate2() {
-        deepLServerUrl = DEEPL_URL;
-    }
-
-    public DeepLTranslate2(Boolean freeApi) {
-        if (freeApi) {
-            deepLServerUrl = DEEPL_URL_FREE;
-        } else {
-            deepLServerUrl = DEEPL_URL;
-        }
+        deepLServerUrl = null;
     }
 
     /**
      * Constructor for tests.
      *
      * @param baseUrl
-     *            custom base url
+     *            custom base url for testing (e.g., WireMock server)
      * @param key
      *            temporary api key
      */
@@ -129,7 +127,10 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
             apiKey = temporaryKey;
         }
         DeepLClientOptions deepLClientOptions = new DeepLClientOptions();
-        deepLClientOptions.setApiVersion(DeepLApiVersion.VERSION_1).setServerUrl(deepLServerUrl);
+        deepLClientOptions.setApiVersion(DeepLApiVersion.VERSION_2);
+        if (deepLServerUrl != null) {
+            deepLClientOptions.setServerUrl(deepLServerUrl);
+        }
         ProjectProperties projectProperties = getProjectProperties();
         DeepLClient client = new DeepLClient(apiKey, deepLClientOptions);
 
