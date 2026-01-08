@@ -9,6 +9,7 @@ import com.deepl.api.DeepLClient;
 import com.deepl.api.DeepLClientOptions;
 import com.deepl.api.DeepLApiVersion;
 import com.deepl.api.TextResult;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -17,7 +18,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests that call the real DeepL API.
  * Only runs when DEEPL_API_KEY environment variable is set.
+ * 
+ * Disabled by default for CI. Run manually with:
+ * DEEPL_API_KEY=your-key ./gradlew test --tests "*DeepLIntegrationTest*"
  */
+@Disabled("Integration tests require a real DeepL API key - run manually")
 public class DeepLIntegrationTest {
 
     @Test
