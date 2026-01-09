@@ -2,7 +2,6 @@
 slf4j = "2.0.7"
 junit5 = "5.13.4"
 wiremock = "3.13.2"
-cacheapi = "1.1.1"
 caffeine = "2.9.3"
 mnemonics = "1.2"
 
@@ -10,7 +9,6 @@ mnemonics = "1.2"
 slf4j-simple = {group = "org.slf4j", name = "slf4j-simple",  version.ref = "slf4j"}
 junit-jupiter = {group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5"}
 wiremock = {group = "org.wiremock", name = "wiremock", version.ref = "wiremock"}
-javax-cache-api = {group = "javax.cache", name = "cache-api", version.ref = "cacheapi"}
 caffeine = {group = "com.github.ben-manes.caffeine", name ="caffeine", version.ref = "caffeine"}
 caffeine-jcache =  {group = "com.github.ben-manes.caffeine", name = "jcache", version.ref = "caffeine"}
 omegat-mnemonics = {group = "org.omegat", name = "lib-mnemonics", version.ref = "mnemonics"}

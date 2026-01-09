@@ -51,7 +51,6 @@ repositories {
 dependencies {
     packIntoJar("com.deepl.api:deepl-java:1.14.0")
 
-    implementation(libs.javax.cache.api)
     implementation(libs.omegat.mnemonics)
     implementation(libs.bundles.caffeine)
 
