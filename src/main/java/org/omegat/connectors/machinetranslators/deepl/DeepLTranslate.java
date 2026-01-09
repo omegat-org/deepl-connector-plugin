@@ -37,8 +37,10 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.omegat.core.Core;
 import org.omegat.core.data.ProjectProperties;
 import org.omegat.core.machinetranslators.BaseCachedTranslate;
@@ -73,6 +75,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
     private static final String TRANSLATE_PATH = "/v2/translate";
 
     protected String temporaryKey;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     /*
      * Register plugins into OmegaT.
@@ -106,11 +109,6 @@ public class DeepLTranslate extends BaseCachedTranslate {
 
     @Override
     protected String translate(Language sLang, Language tLang, String text) throws MachineTranslateError {
-        String cached = getCachedTranslation(sLang, tLang, text);
-        if (cached != null) {
-            return cached;
-        }
-
         String apiKey = resolveApiKey();
         String baseUrl = resolveBaseUrl(apiKey);
 
@@ -126,11 +124,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
             throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"));
         }
 
-        String cleaned = parseAndCleanResponse(response, text);
-
-        putToCache(sLang, tLang, text, cleaned);
-
-        return cleaned;
+        return parseAndCleanResponse(response, text);
     }
 
     @Override
@@ -201,10 +195,16 @@ public class DeepLTranslate extends BaseCachedTranslate {
 
     private String parseAndCleanResponse(String response, String originalText) throws MachineTranslateError {
         try {
-            String translatedText = extractTranslationText(response);
+            JsonNode node = mapper.readTree(response);
+            JsonNode translations = node.get("translations");
+            if (translations == null || translations.isEmpty()) {
+                return null;
+            }
+            JsonNode translation = translations.get(0);
+            String translatedText = translation.get("text").asText();
             String unescaped = BaseTranslate.unescapeHTML(translatedText);
             return cleanSpacesAroundTags(unescaped, originalText);
-        } catch (IllegalArgumentException ex) {
+        } catch (JsonProcessingException ex) {
             throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"));
         }
     }
@@ -226,68 +226,6 @@ public class DeepLTranslate extends BaseCachedTranslate {
             String countryCode = language.getCountryCode();
             if (countryCode != null && !countryCode.isEmpty()) {
                 builder.append('-').append(countryCode.toUpperCase(Locale.ENGLISH));
-            }
-        }
-        return builder.toString();
-    }
-
-    private static final Pattern TEXT_PATTERN = Pattern.compile("\"text\"\\s*:\\s*\"((?:\\\\.|[^\\\\\"])*)\"");
-
-    private static String extractTranslationText(String response) {
-        Matcher matcher = TEXT_PATTERN.matcher(response);
-        if (!matcher.find()) {
-            throw new IllegalArgumentException("Missing translation text");
-        }
-        return decodeJsonString(matcher.group(1));
-    }
-
-    private static String decodeJsonString(String value) {
-        StringBuilder builder = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if (ch == '\\') {
-                if (++i >= value.length()) {
-                    throw new IllegalArgumentException("Invalid escape sequence");
-                }
-                char escape = value.charAt(i);
-                switch (escape) {
-                    case '\"':
-                    case '\\':
-                    case '/':
-                        builder.append(escape);
-                        break;
-                    case 'b':
-                        builder.append('\b');
-                        break;
-                    case 'f':
-                        builder.append('\f');
-                        break;
-                    case 'n':
-                        builder.append('\n');
-                        break;
-                    case 'r':
-                        builder.append('\r');
-                        break;
-                    case 't':
-                        builder.append('\t');
-                        break;
-                    case 'u':
-                        if (i + 4 >= value.length()) {
-                            throw new IllegalArgumentException("Invalid unicode escape");
-                        }
-                        String hex = value.substring(i + 1, i + 5);
-                        try {
-                            builder.append((char) Integer.parseInt(hex, 16));
-                        } catch (NumberFormatException ex) {
-                            throw new IllegalArgumentException("Invalid unicode escape", ex);
-                        }
-                        i += 4;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported escape sequence");
-                }
-            } else {
-                builder.append(ch);
             }
         }
         return builder.toString();

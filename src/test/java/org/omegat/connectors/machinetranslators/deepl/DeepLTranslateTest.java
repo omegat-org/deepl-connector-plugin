@@ -81,7 +81,7 @@ public class DeepLTranslateTest {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{ \"translations\":[ "
-                                + "{ \"detected_source_language\": \"DE\", \"text\": \"Hello World!\", \"billed_characters\": 11 }"
+                                + "{ \"detected_source_language\": \"DE\", \"text\": \"Hello\\tWorld!\", \"billed_characters\": 11 }"
                                 + " ] }")));
 
         int port = wireMockRuntimeInfo.getHttpPort();
@@ -91,7 +91,7 @@ public class DeepLTranslateTest {
         DeepLTranslate deepLTranslate = new DeepLTranslateTestStub(url, key);
         String result = deepLTranslate.translate(new Language("de-DE"), new Language("en-US"), sourceText);
 
-        assertEquals("Hello World!", result);
+        assertEquals("Hello\tWorld!", result);
     }
 
     static class DeepLTranslateTestStub extends DeepLTranslate {
