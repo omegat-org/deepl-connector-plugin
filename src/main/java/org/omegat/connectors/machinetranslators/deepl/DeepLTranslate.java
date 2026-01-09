@@ -93,7 +93,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
     public DeepLTranslate(String tmpKey) {
         this.temporaryKey = tmpKey;
     }
-    
+
     @Override
     protected String getPreferenceName() {
         return ALLOW_DEEPL_TRANSLATE;
@@ -170,12 +170,13 @@ public class DeepLTranslate extends BaseCachedTranslate {
         }
         return apiKey;
     }
-    
+
     private String resolveBaseUrl(String apiKey) {
         return apiKey.endsWith(":fx") ? DEEPL_URL_FREE : DEEPL_URL;
     }
 
-    private Map<String, String> buildRequestParams(Language sLang, Language tLang, String text) throws MachineTranslateError {
+    private Map<String, String> buildRequestParams(Language sLang, Language tLang, String text)
+            throws MachineTranslateError {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("text", text);
 
@@ -250,40 +251,40 @@ public class DeepLTranslate extends BaseCachedTranslate {
                 }
                 char escape = value.charAt(i);
                 switch (escape) {
-                case '\"':
-                case '\\':
-                case '/':
-                    builder.append(escape);
-                    break;
-                case 'b':
-                    builder.append('\b');
-                    break;
-                case 'f':
-                    builder.append('\f');
-                    break;
-                case 'n':
-                    builder.append('\n');
-                    break;
-                case 'r':
-                    builder.append('\r');
-                    break;
-                case 't':
-                    builder.append('\t');
-                    break;
-                case 'u':
-                    if (i + 4 >= value.length()) {
-                        throw new IllegalArgumentException("Invalid unicode escape");
-                    }
-                    String hex = value.substring(i + 1, i + 5);
-                    try {
-                        builder.append((char) Integer.parseInt(hex, 16));
-                    } catch (NumberFormatException ex) {
-                        throw new IllegalArgumentException("Invalid unicode escape", ex);
-                    }
-                    i += 4;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported escape sequence");
+                    case '\"':
+                    case '\\':
+                    case '/':
+                        builder.append(escape);
+                        break;
+                    case 'b':
+                        builder.append('\b');
+                        break;
+                    case 'f':
+                        builder.append('\f');
+                        break;
+                    case 'n':
+                        builder.append('\n');
+                        break;
+                    case 'r':
+                        builder.append('\r');
+                        break;
+                    case 't':
+                        builder.append('\t');
+                        break;
+                    case 'u':
+                        if (i + 4 >= value.length()) {
+                            throw new IllegalArgumentException("Invalid unicode escape");
+                        }
+                        String hex = value.substring(i + 1, i + 5);
+                        try {
+                            builder.append((char) Integer.parseInt(hex, 16));
+                        } catch (NumberFormatException ex) {
+                            throw new IllegalArgumentException("Invalid unicode escape", ex);
+                        }
+                        i += 4;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported escape sequence");
                 }
             } else {
                 builder.append(ch);

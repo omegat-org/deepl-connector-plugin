@@ -102,6 +102,7 @@ public class DeepLTranslateTest {
             this.testUrl = url;
             this.temporaryKey = key;
         }
+
         @Override
         public ProjectProperties getProjectProperties() {
             return null;
