@@ -171,7 +171,7 @@ public class DeepLTranslate extends BaseCachedTranslate {
         return apiKey;
     }
 
-    private String resolveBaseUrl(String apiKey) {
+    protected String resolveBaseUrl(String apiKey) {
         return apiKey.endsWith(":fx") ? DEEPL_URL_FREE : DEEPL_URL;
     }
 

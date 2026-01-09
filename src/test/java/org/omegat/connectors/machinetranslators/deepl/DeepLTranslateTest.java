@@ -104,6 +104,11 @@ public class DeepLTranslateTest {
         }
 
         @Override
+        protected String resolveBaseUrl(String apiKey) {
+            return testUrl;
+        }
+
+        @Override
         public ProjectProperties getProjectProperties() {
             return null;
         }
