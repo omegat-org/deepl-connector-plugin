@@ -5,20 +5,20 @@
 
 package org.omegat.machinetranslators.deepl;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.deepl.api.DeepLApiVersion;
 import com.deepl.api.DeepLClient;
 import com.deepl.api.DeepLClientOptions;
-import com.deepl.api.DeepLApiVersion;
 import com.deepl.api.TextResult;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * Integration tests that call the real DeepL API.
  * Only runs when DEEPL_API_KEY environment variable is set.
- * 
+ * <p>
  * Disabled by default for CI. Run manually with:
  * DEEPL_API_KEY=your-key ./gradlew test --tests "*DeepLIntegrationTest*"
  */
@@ -35,24 +35,24 @@ public class DeepLIntegrationTest {
         // Create client with V2 API (same as the plugin)
         DeepLClientOptions options = new DeepLClientOptions();
         options.setApiVersion(DeepLApiVersion.VERSION_2);
-        
+
         DeepLClient client = new DeepLClient(apiKey, options);
 
         // Test translation
         String sourceText = "Hello, world!";
         System.out.println("Translating: \"" + sourceText + "\" from EN to DE");
-        
+
         TextResult result = client.translateText(sourceText, "EN", "DE");
-        
+
         System.out.println("Result: \"" + result.getText() + "\"");
         System.out.println("Detected source language: " + result.getDetectedSourceLanguage());
         System.out.println("Billed characters: " + result.getBilledCharacters());
 
         assertNotNull(result.getText());
         assertFalse(result.getText().isEmpty());
-        assertTrue(result.getText().toLowerCase().contains("hallo") || 
-                   result.getText().toLowerCase().contains("welt"));
-        
+        assertTrue(result.getText().toLowerCase().contains("hallo")
+                || result.getText().toLowerCase().contains("welt"));
+
         System.out.println("✅ Integration test passed!");
     }
 
@@ -60,20 +60,20 @@ public class DeepLIntegrationTest {
     @EnabledIfEnvironmentVariable(named = "DEEPL_API_KEY", matches = ".+")
     void testUsage() throws Exception {
         String apiKey = System.getenv("DEEPL_API_KEY");
-        
+
         DeepLClientOptions options = new DeepLClientOptions();
         options.setApiVersion(DeepLApiVersion.VERSION_2);
-        
+
         DeepLClient client = new DeepLClient(apiKey, options);
 
         var usage = client.getUsage();
         System.out.println("API Usage: " + usage);
-        
+
         if (usage.getCharacter() != null) {
-            System.out.println("Characters used: " + usage.getCharacter().getCount() + 
-                             " / " + usage.getCharacter().getLimit());
+            System.out.println("Characters used: " + usage.getCharacter().getCount() + " / "
+                    + usage.getCharacter().getLimit());
         }
-        
+
         System.out.println("✅ Usage check passed!");
     }
 }
