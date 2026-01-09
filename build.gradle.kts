@@ -51,6 +51,7 @@ repositories {
 dependencies {
     packIntoJar("com.deepl.api:deepl-java:1.14.0")
 
+    implementation(libs.bundles.jackson)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
