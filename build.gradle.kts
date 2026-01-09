@@ -51,6 +51,9 @@ repositories {
 dependencies {
     packIntoJar("com.deepl.api:deepl-java:1.14.0")
 
+    implementation(libs.omegat.mnemonics)
+    implementation(libs.bundles.caffeine)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
