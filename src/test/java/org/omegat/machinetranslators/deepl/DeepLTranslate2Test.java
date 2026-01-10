@@ -81,7 +81,7 @@ public class DeepLTranslate2Test {
     void testResponse(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
         String key = "deepl8api8key";
 
-        WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v1/translate"))
+        WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
                 .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
                 .withRequestBody(containing("text=source+text"))
                 .withRequestBody(containing("source_lang=de-DE"))

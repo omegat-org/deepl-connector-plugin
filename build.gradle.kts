@@ -40,7 +40,7 @@ tasks.wrapper {
 
 omegat {
     version("6.0.0")
-    pluginClass("org.omegat.connectors.machinetranslators.deepl.DeepLTranslate")
+    pluginClass("org.omegat.machinetranslators.deepl.DeepLTranslate2")
     packIntoJarFileFilter = {it.exclude("META-INF/**/*", "module-info.class", "kotlin/**/*")}
 }
 
