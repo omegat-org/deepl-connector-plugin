@@ -182,3 +182,23 @@ spotless {
         formatAnnotations()
     }
 }
+
+tasks.register("installGitHooks", Copy::class) {
+    val hookFile = file(".git/hooks/pre-commit")
+
+    doLast {
+        hookFile.writeText(
+            """
+            #!/bin/sh
+            ./gradlew spotlessApply
+            status=$?
+            if [ ${'$'}status -ne 0 ]; then
+                echo "Spotless failed, commit aborted."
+                exit ${'$'}status
+            fi
+            git add -u
+            """.trimIndent()
+        )
+        hookFile.setExecutable(true)
+    }
+}
