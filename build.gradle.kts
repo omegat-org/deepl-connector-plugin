@@ -182,3 +182,34 @@ spotless {
         formatAnnotations()
     }
 }
+
+tasks.register("installGitHooks") {
+    val hookFile = file(".git/hooks/pre-commit")
+    val marker = "# Managed by Gradle (installGitHooks)"
+    val hookContent = """
+            #!/bin/sh
+            $marker
+            ./gradlew spotlessApply
+            status=$?
+            if [ ${'$'}status -ne 0 ]; then
+                echo "Spotless failed, commit aborted."
+                exit ${'$'}status
+            fi
+            git add -u
+    """.trimIndent()
+    inputs.property("content", hookContent)
+    outputs.file(hookFile)
+    hookFile.setExecutable(true)
+
+    doLast {
+        val alreadyExists = hookFile.exists()
+        val isManaged = alreadyExists && hookFile.readLines().any { it.contains(marker) }
+
+        if (alreadyExists && !isManaged) {
+            logger.warn("Skipping hook installation: .git/hooks/pre-commit already exists and not managed by this task.")
+            return@doLast
+        }
+        hookFile.writeText(hookContent)
+        hookFile.setExecutable(true)
+    }
+}

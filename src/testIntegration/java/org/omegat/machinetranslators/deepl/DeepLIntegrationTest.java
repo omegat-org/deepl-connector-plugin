@@ -31,7 +31,7 @@ public class DeepLIntegrationTest {
     void testLiveApiCall() throws Exception {
         String apiKey = System.getenv("DEEPL_API_KEY");
         LOGGER.info("Testing with API key: {}...{}", apiKey.substring(0, 4), apiKey.substring(apiKey.length() - 4));
-        LOGGER.info("Key is for {}", apiKey.endsWith(":fx") ?"Free API" : "Paid API");
+        LOGGER.info("Key is for {}", apiKey.endsWith(":fx") ? "Free API" : "Paid API");
 
         // Create client with V2 API (same as the plugin)
         DeepLClientOptions options = new DeepLClientOptions();
