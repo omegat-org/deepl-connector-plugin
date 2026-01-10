@@ -11,7 +11,6 @@ import com.deepl.api.DeepLApiVersion;
 import com.deepl.api.DeepLClient;
 import com.deepl.api.DeepLClientOptions;
 import com.deepl.api.TextResult;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
  * Run with:
  * DEEPL_API_KEY=your-key ./gradlew testIntegration
  */
-@Disabled("Integration tests require a real DeepL API key - run manually")
 public class DeepLIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeepLIntegrationTest.class);
@@ -32,8 +30,8 @@ public class DeepLIntegrationTest {
     @EnabledIfEnvironmentVariable(named = "DEEPL_API_KEY", matches = ".+")
     void testLiveApiCall() throws Exception {
         String apiKey = System.getenv("DEEPL_API_KEY");
-        LOGGER.info("Testing with API key: " + apiKey.substring(0, 8) + "...");
-        LOGGER.info("Key ends with :fx (Free API): " + apiKey.endsWith(":fx"));
+        LOGGER.info("Testing with API key: {}...{}", apiKey.substring(0, 4), apiKey.substring(apiKey.length() - 4));
+        LOGGER.info("Key is for {}", apiKey.endsWith(":fx") ?"Free API" : "Paid API");
 
         // Create client with V2 API (same as the plugin)
         DeepLClientOptions options = new DeepLClientOptions();
@@ -43,13 +41,13 @@ public class DeepLIntegrationTest {
 
         // Test translation
         String sourceText = "Hello, world!";
-        LOGGER.info("Translating: \"" + sourceText + "\" from EN to DE");
+        LOGGER.info("Translating: \"{}\" from EN to DE", sourceText);
 
         TextResult result = client.translateText(sourceText, "EN", "DE");
 
-        LOGGER.info("Result: \"" + result.getText() + "\"");
-        LOGGER.info("Detected source language: " + result.getDetectedSourceLanguage());
-        LOGGER.info("Billed characters: " + result.getBilledCharacters());
+        LOGGER.info("Result: \"{}\"", result.getText());
+        LOGGER.info("Detected source language: {}", result.getDetectedSourceLanguage());
+        LOGGER.info("Billed characters: {}", result.getBilledCharacters());
 
         assertNotNull(result.getText());
         assertFalse(result.getText().isEmpty());
@@ -70,7 +68,7 @@ public class DeepLIntegrationTest {
         DeepLClient client = new DeepLClient(apiKey, options);
 
         var usage = client.getUsage();
-        LOGGER.info("API Usage: " + usage);
+        LOGGER.info("API Usage: {}", usage);
 
         var detail = usage.getCharacter();
         if (detail != null) {
