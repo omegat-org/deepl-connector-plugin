@@ -48,8 +48,15 @@ repositories {
     mavenCentral()
 }
 
+sourceSets.register("testIntegration") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += output + compileClasspath
+}
+val testIntegrationImplementation by configurations.getting
+val testIntegrationRuntimeOnly by configurations.getting
+
 dependencies {
-    packIntoJar("com.deepl.api:deepl-java:1.14.0")
+    packIntoJar(libs.deepl.java)
 
     implementation(libs.omegat.mnemonics)
     implementation(libs.bundles.caffeine)
@@ -57,8 +64,12 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
-}
 
+    testIntegrationImplementation(libs.deepl.java)
+    testIntegrationImplementation(libs.junit.jupiter)
+    testIntegrationImplementation(libs.slf4j.api)
+    testIntegrationRuntimeOnly(libs.slf4j.simple)
+}
 
 java {
     toolchain {
@@ -70,6 +81,17 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
+tasks.register<Test>("testIntegration") {
+    description = "Runs integration tests."
+    group = "verification"
+    testClassesDirs = sourceSets["testIntegration"].output.classesDirs
+    classpath = sourceSets["testIntegration"].runtimeClasspath
+    useJUnitPlatform()
+
+    // Pass the API key from the environment to the test process
+    environment("DEEPL_API_KEY", System.getenv("DEEPL_API_KEY") ?: "")
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -78,7 +100,7 @@ publishing {
             artifactId = "omegat-deepl-connector"
             pom {
                 name.set("omegat-deepl-connector")
-                description.set("DeepL V1 connector plugin")
+                description.set("DeepL V2 API connector plugin")
                 url.set("https://github.com/omegat-org/deepl-connector-plugin")
                 licenses {
                     license {
