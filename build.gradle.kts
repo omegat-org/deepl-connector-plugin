@@ -50,10 +50,14 @@ repositories {
 
 sourceSets.register("testIntegration") {
     compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += output + compileClasspath
+    runtimeClasspath += sourceSets.main.get().output
 }
-val testIntegrationImplementation by configurations.getting
-val testIntegrationRuntimeOnly by configurations.getting
+val testIntegrationImplementation by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+val testIntegrationRuntimeOnly by configurations.getting {
+    extendsFrom(configurations.runtimeOnly.get())
+}
 
 dependencies {
     packIntoJar(libs.deepl.java)
@@ -61,12 +65,15 @@ dependencies {
     implementation(libs.omegat.mnemonics)
     implementation(libs.bundles.caffeine)
 
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.wiremock)
     testRuntimeOnly(libs.slf4j.simple)
 
     testIntegrationImplementation(libs.deepl.java)
+    testIntegrationImplementation(platform(libs.junit.bom))
     testIntegrationImplementation(libs.junit.jupiter)
+    testIntegrationImplementation(libs.junit.launcher)
     testIntegrationImplementation(libs.slf4j.api)
     testIntegrationRuntimeOnly(libs.slf4j.simple)
 }
