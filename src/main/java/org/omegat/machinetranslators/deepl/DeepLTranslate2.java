@@ -29,6 +29,7 @@
 
 package org.omegat.machinetranslators.deepl;
 
+import com.deepl.api.ConnectionException;
 import com.deepl.api.DeepLApiVersion;
 import com.deepl.api.DeepLClient;
 import com.deepl.api.DeepLClientOptions;
@@ -37,6 +38,7 @@ import com.deepl.api.SentenceSplittingMode;
 import com.deepl.api.TextResult;
 import com.deepl.api.TextTranslationOptions;
 import java.awt.Window;
+import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 import org.omegat.core.Core;
 import org.omegat.core.data.ProjectProperties;
@@ -129,6 +131,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         DeepLClientOptions deepLClientOptions = new DeepLClientOptions();
         deepLClientOptions.setApiVersion(DeepLApiVersion.VERSION_2);
         if (deepLServerUrl != null) {
+            // deepL server URL is automatically detected in the client library.
+            // we set custom url, eg. locahost, for a test purpose.
             deepLClientOptions.setServerUrl(deepLServerUrl);
         }
         ProjectProperties projectProperties = getProjectProperties();
@@ -145,15 +149,34 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         TextResult result;
         try {
             result = client.translateText(text, sourceLang, targetLang, textTranslationOptions);
-        } catch (DeepLException | InterruptedException e) {
-            throw new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"));
+        } catch (DeepLException e) {
+            throw handleDeepLError(e);
+        } catch (InterruptedException e) {
+            throw new MachineTranslateError(BUNDLE.getString("DEEPL_INTERRUPTION_ERROR"), e);
         }
         String tr = result.getText();
         tr = BaseTranslate.unescapeHTML(tr);
         return cleanSpacesAroundTags(tr, text);
     }
 
-    // for test stub
+    private MachineTranslateError handleDeepLError(DeepLException e) {
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof UnsupportedEncodingException) {
+                // DeepL client failed to bulid URL string.
+                return new MachineTranslateError(BUNDLE.getString("DEEPL_ENCODING_ERROR"), e);
+            }
+            if (cause instanceof ConnectionException) {
+                // DeepL client failed to connect to the server.
+                return new MachineTranslateError(BUNDLE.getString("DEEPL_CONNECTION_ERROR"), e);
+            }
+            cause = cause.getCause();
+        }
+        // Unknown DeepL error.
+        return new MachineTranslateError(BUNDLE.getString("DEEPL_GENERAL_ERROR"), e);
+    }
+
+    // Allow override for testing
     protected ProjectProperties getProjectProperties() {
         return Core.getProject().getProjectProperties();
     }
