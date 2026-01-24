@@ -39,6 +39,7 @@ import com.deepl.api.TextResult;
 import com.deepl.api.TextTranslationOptions;
 import java.awt.Window;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 import java.util.ResourceBundle;
 import org.omegat.core.Core;
 import org.omegat.core.data.ProjectProperties;
@@ -67,6 +68,7 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     protected static final String PROPERTY_API_KEY = "deepl.v2api.key";
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
+    private static final Map<String, String> LANG_MAP = Map.of("en", "en-GB", "pt", "pt-BR");
 
     /**
      * Custom server URL, only set for testing. When null, the library auto-detects
@@ -138,8 +140,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         ProjectProperties projectProperties = getProjectProperties();
         DeepLClient client = new DeepLClient(apiKey, deepLClientOptions);
 
-        String sourceLang = sLang.getLanguage();
-        String targetLang = tLang.getLanguage();
+        String sourceLang = updateLanguage(sLang.getLanguage());
+        String targetLang = updateLanguage(tLang.getLanguage());
         TextTranslationOptions textTranslationOptions = new TextTranslationOptions();
 
         if (projectProperties != null && projectProperties.isSentenceSegmentingEnabled()) {
@@ -179,6 +181,10 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     // Allow override for testing
     protected ProjectProperties getProjectProperties() {
         return Core.getProject().getProjectProperties();
+    }
+
+    private String updateLanguage(String lang) {
+        return LANG_MAP.getOrDefault(lang, lang);
     }
 
     /**
