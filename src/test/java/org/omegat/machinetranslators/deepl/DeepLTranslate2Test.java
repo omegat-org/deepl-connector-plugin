@@ -84,7 +84,7 @@ public class DeepLTranslate2Test {
         WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
                 .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
                 .withRequestBody(containing("text=source+text"))
-                .withRequestBody(containing("source_lang=de-DE"))
+                .withRequestBody(containing("source_lang=de"))
                 .withRequestBody(containing("target_lang=en-US"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
@@ -110,7 +110,7 @@ public class DeepLTranslate2Test {
         WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
                 .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
                 .withRequestBody(containing("text=source+text"))
-                .withRequestBody(containing("source_lang=en-GB"))
+                .withRequestBody(containing("source_lang=en"))
                 .withRequestBody(containing("target_lang=pt-BR"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
@@ -127,6 +127,84 @@ public class DeepLTranslate2Test {
         DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
         String result = deepLTranslate.translate(new Language("en"), new Language("pt"), sourceText);
         assertEquals("Ola Mundo!", result);
+    }
+
+    @Test
+    void testSourceLanguageMappingRestriction(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
+        String key = "deepl8api8key";
+
+        WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
+                .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
+                .withRequestBody(containing("text=source+text"))
+                .withRequestBody(containing("source_lang=pt"))
+                .withRequestBody(containing("target_lang=en-US"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{ \"translations\":[ "
+                                + "{ \"detected_source_language\": \"PT\", \"text\": \"Hello World!\", \"billed_characters\": 11 }"
+                                + " ] }")));
+        WireMock.stubFor(
+                WireMock.get(WireMock.anyUrl()).willReturn(WireMock.aResponse().withStatus(404)));
+
+        int port = wireMockRuntimeInfo.getHttpPort();
+        String url = String.format("http://localhost:%d", port);
+        String sourceText = "source text";
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
+        String result = deepLTranslate.translate(new Language("pt"), new Language("en"), sourceText);
+        assertEquals("Hello World!", result);
+    }
+
+    @Test
+    void testChineseLanguageMappingRestriction(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
+        String key = "deepl8api8key";
+
+        WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
+                .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
+                .withRequestBody(containing("text=source+text"))
+                .withRequestBody(containing("source_lang=zh"))
+                .withRequestBody(containing("target_lang=en-US"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{ \"translations\":[ "
+                                + "{ \"detected_source_language\": \"ZH\", \"text\": \"Hello World!\", \"billed_characters\": 11 }"
+                                + " ] }")));
+        WireMock.stubFor(
+                WireMock.get(WireMock.anyUrl()).willReturn(WireMock.aResponse().withStatus(404)));
+
+        int port = wireMockRuntimeInfo.getHttpPort();
+        String url = String.format("http://localhost:%d", port);
+        String sourceText = "source text";
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
+        String result = deepLTranslate.translate(new Language("zh-CN"), new Language("en"), sourceText);
+        assertEquals("Hello World!", result);
+    }
+
+    @Test
+    void testEnglishVariantSourceLanguageMappingRestriction(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
+        String key = "deepl8api8key";
+
+        WireMock.stubFor(WireMock.post(WireMock.urlPathEqualTo("/v2/translate"))
+                .withHeader("Authorization", WireMock.equalTo("DeepL-Auth-Key " + key))
+                .withRequestBody(containing("text=source+text"))
+                .withRequestBody(containing("source_lang=en"))
+                .withRequestBody(containing("target_lang=de"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{ \"translations\":[ "
+                                + "{ \"detected_source_language\": \"EN\", \"text\": \"Hallo Welt!\", \"billed_characters\": 11 }"
+                                + " ] }")));
+        WireMock.stubFor(
+                WireMock.get(WireMock.anyUrl()).willReturn(WireMock.aResponse().withStatus(404)));
+
+        int port = wireMockRuntimeInfo.getHttpPort();
+        String url = String.format("http://localhost:%d", port);
+        String sourceText = "source text";
+        DeepLTranslate2 deepLTranslate = new DeepLTranslate2TestStub(url, key);
+        String result = deepLTranslate.translate(new Language("en-US"), new Language("de"), sourceText);
+        assertEquals("Hallo Welt!", result);
     }
 
     static class DeepLTranslate2TestStub extends DeepLTranslate2 {

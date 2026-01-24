@@ -39,6 +39,8 @@ import com.deepl.api.TextResult;
 import com.deepl.api.TextTranslationOptions;
 import java.awt.Window;
 import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import org.omegat.core.Core;
@@ -68,7 +70,11 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
     protected static final String PROPERTY_API_KEY = "deepl.v2api.key";
     private static final String BUNDLE_BASENAME = "org.omegat.machinetranslators.deepl.DeepLBundle";
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_BASENAME);
-    private static final Map<String, String> LANG_MAP = Map.of("en", "en-GB", "pt", "pt-BR");
+    private static final Map<String, String> TARGET_LANG_MAP = Map.of(
+            "EN-US", "EN-US", "EN-GB", "EN-GB", "EN", "EN-US", "PT", "PT-BR", "ZH-CN", "ZH-HANS", "ZH-TW", "ZH-HANT");
+    private static final Map<String, String> SOURCE_LANG_MAP = Map.of(
+            "EN-US", "EN", "EN-GB", "EN", "PT-BR", "PT", "PT-PT", "PT", "ZH-CN", "ZH", "ZH-TW", "ZH", "ZH-HANS", "ZH",
+            "ZH-HANT", "ZH");
 
     /**
      * Custom server URL, only set for testing. When null, the library auto-detects
@@ -140,8 +146,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         ProjectProperties projectProperties = getProjectProperties();
         DeepLClient client = new DeepLClient(apiKey, deepLClientOptions);
 
-        String sourceLang = updateLanguage(sLang.getLanguage());
-        String targetLang = updateLanguage(tLang.getLanguage());
+        String sourceLang = updateSourceLanguage(sLang);
+        String targetLang = updateTargetLanguage(tLang);
         TextTranslationOptions textTranslationOptions = new TextTranslationOptions();
 
         if (projectProperties != null && projectProperties.isSentenceSegmentingEnabled()) {
@@ -152,7 +158,7 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         try {
             result = client.translateText(text, sourceLang, targetLang, textTranslationOptions);
         } catch (DeepLException e) {
-            throw handleDeepLError(e);
+            throw handleDeepLError(sourceLang, targetLang, e);
         } catch (InterruptedException e) {
             throw new MachineTranslateError(BUNDLE.getString("DEEPL_INTERRUPTION_ERROR"), e);
         }
@@ -161,7 +167,7 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         return cleanSpacesAroundTags(tr, text);
     }
 
-    private MachineTranslateError handleDeepLError(DeepLException e) {
+    private MachineTranslateError handleDeepLError(String sourceLang, String targetLang, DeepLException e) {
         Throwable cause = e;
         while (cause != null) {
             if (cause instanceof UnsupportedEncodingException) {
@@ -175,7 +181,8 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
             cause = cause.getCause();
         }
         // Unknown DeepL error.
-        return new MachineTranslateError(BUNDLE.getString("DEEPL_GENERAL_ERROR"), e);
+        return new MachineTranslateError(
+                MessageFormat.format(BUNDLE.getString("DEEPL_GENERAL_ERROR"), sourceLang, targetLang), e);
     }
 
     // Allow override for testing
@@ -183,8 +190,16 @@ public class DeepLTranslate2 extends BaseCachedTranslate {
         return Core.getProject().getProjectProperties();
     }
 
-    private String updateLanguage(String lang) {
-        return LANG_MAP.getOrDefault(lang, lang);
+    private String updateTargetLanguage(Language tLang) {
+        String key = tLang.getLanguage().toUpperCase(Locale.ENGLISH);
+        String langCode = tLang.getLanguageCode();
+        return TARGET_LANG_MAP.getOrDefault(key, langCode);
+    }
+
+    private String updateSourceLanguage(Language sLang) {
+        String key = sLang.getLanguage().toUpperCase(Locale.ENGLISH);
+        String langCode = sLang.getLanguageCode();
+        return SOURCE_LANG_MAP.getOrDefault(key, langCode);
     }
 
     /**
