@@ -78,7 +78,7 @@ public final class DeepLLanguage {
      */
     private String mapToDeepLLanguage(Language language, Map<String, String> languageMap) {
         String key = language.getLanguage().toUpperCase(Locale.ENGLISH);
-        String langCode = language.getLanguageCode();
+        String langCode = language.getLanguageCode().toUpperCase(Locale.ENGLISH);
         return languageMap.getOrDefault(key, langCode);
     }
 
