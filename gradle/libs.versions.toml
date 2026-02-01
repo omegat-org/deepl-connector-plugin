@@ -1,6 +1,6 @@
 [versions]
 slf4j = "2.0.7"
-junit5 = "5.14.0"
+junit5 = "6.0.2"
 wiremock = "3.13.2"
 caffeine = "2.9.3"
 mnemonics = "1.2"
