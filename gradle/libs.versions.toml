@@ -22,7 +22,7 @@ omegat-mnemonics = {group = "org.omegat", name = "lib-mnemonics", version.ref = 
 caffeine = ["caffeine", "caffeine-jcache"]
 
 [plugins]
-git-version = {id = "com.palantir.git-version", version = "4.2.0"}
+git-version = {id = "com.palantir.git-version", version = "4.3.0"}
 spotbugs = {id = "com.github.spotbugs", version = "6.4.8"}
 spotless = {id = "com.diffplug.spotless", version = "8.2.1"}
 omegat = {id = "org.omegat.gradle", version = "2.0.0-rc2"}
