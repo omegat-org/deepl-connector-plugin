@@ -12,7 +12,8 @@ All notable changes to this project will be documented in this file.
 * Update error log with reason
 
 ### Changed
-* Introduce DeepLLanguage class to represent language
+* Introduce DeepLLanguage class to represent language(#91)
+* Use version catalog to specify gradle wrapper version
 * Update build dependencies
     * spotless@8.2.1
     * develocity@4.3.2
