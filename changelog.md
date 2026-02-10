@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.3.0 - 2026-02-10
+
+### Fixed
+* Update language restriction checks(#88)
+
+### Improvement
+* Update error log with reason
+
+### Changed
+* Introduce DeepLLanguage class to represent language
+* Update build dependencies
+    * spotless@8.2.1
+    * develocity@4.3.2
+    * gradle@9.3.1
+    * git-version@4.3.0
+
 ## 0.2.0 - 2026-01-10
 * Support DeepL V2 API (#81)
 * Update dependencies

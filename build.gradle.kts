@@ -35,7 +35,7 @@ if (dotgit.exists()) {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
-    gradleVersion = "8.13"
+    gradleVersion = libs.versions.gradle.wrapper.get()
 }
 
 omegat {
