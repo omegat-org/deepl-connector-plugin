@@ -5,7 +5,7 @@ junit5 = "5.14.0"
 wiremock = "3.13.2"
 caffeine = "2.9.3"
 mnemonics = "1.2"
-deepl = "1.15.0"
+deepl = "1.16.0"
 
 [libraries]
 deepl-java = {group = "com.deepl.api", name = "deepl-java", version.ref = "deepl"}
